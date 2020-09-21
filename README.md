@@ -25,7 +25,6 @@ w\:* {behavior:url(#default#VML);}
 .shape {behavior:url(#default#VML);}
 </style>
 <![endif]-->
-<title>Homework 1 &#8211; Sepia &amp; Contrast Transfrom</title>
 <!--[if gte mso 9]><xml>
  <o:DocumentProperties>
   <o:Author>김 진원</o:Author>
