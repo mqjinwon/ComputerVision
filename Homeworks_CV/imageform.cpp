@@ -20,10 +20,10 @@ ImageForm::ImageForm(const QString& q_stFile, const QString& q_stID, MainFrame* 
     _q_bmpMain->load(q_stFile);
 
     //영상처리용 메모리와 공유 설정
-    if(_q_bmpMain->format() == QImage::Format_RGB32)
-        _icMain.Create(_q_bmpMain->height(),_q_bmpMain->width(), (KCOLOR32*)_q_bmpMain->bits());
-    else if(_q_bmpMain->format() == QImage::Format_Indexed8|| QImage::Format_Grayscale8 || QImage::Format_Mono)
+    if(_q_bmpMain->format() == QImage::Format_Grayscale8)
         _igMain.Create(_q_bmpMain->height(),_q_bmpMain->width(),_q_bmpMain->bits());
+    else if(_q_bmpMain->format() == QImage::Format_RGB32)
+        _icMain.Create(_q_bmpMain->height(),_q_bmpMain->width(), (KCOLOR32*)_q_bmpMain->bits());
 
     //ImageForm의 출력 위치 및 크기 설정
     static int   nXo, nYo=-30;

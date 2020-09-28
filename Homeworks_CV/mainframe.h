@@ -51,6 +51,12 @@ private slots:
 
     void on_buttonContrast_clicked();
 
+    void on_buttonOtsu_clicked();
+
+    void on_buttonMorp_clicked();
+
+    void on_buttonLabel_clicked();
+
 protected:
     void closeEvent(QCloseEvent* event);
 };

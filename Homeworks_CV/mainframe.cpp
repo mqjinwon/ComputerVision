@@ -329,3 +329,107 @@ void MainFrame::on_buttonContrast_clicked()
     //UI 활성화 갱신
     UpdateUI();
 }
+
+void MainFrame::on_buttonOtsu_clicked()
+{
+    //포커스 된 ImageForm으로부터 영상을 가져옴
+    KImageGray   igMain;
+    if(_q_pFormFocused != 0 && _q_pFormFocused->ImageGray().Address() &&  _q_pFormFocused->ID() == "OPEN")
+        igMain = _q_pFormFocused->ImageGray();
+    else
+        return;
+
+    ImageForm*  q_pForm;
+
+    ImgProcess.OtsuThreshold(igMain);
+
+    // 출력을 위한 ImageForm 생성
+    q_pForm = new ImageForm(igMain, "Otsu Image", this);
+
+    _plpImageForm->Add(q_pForm);
+    q_pForm->show();
+
+    //UI 활성화 갱신
+    UpdateUI();
+}
+
+void MainFrame::on_buttonMorp_clicked()
+{
+    //포커스 된 ImageForm으로부터 영상을 가져옴
+    KImageGray   igMain;
+    if(_q_pFormFocused != 0 && _q_pFormFocused->ImageGray().Address())
+        igMain = _q_pFormFocused->ImageGray();
+    else
+        return;
+
+    ImageForm*  q_pForm;
+
+    std::string cbitem = ui->cbMorp->currentText().toUtf8().constData();
+
+    if(cbitem == "Dilation"){
+        igMain = ImgProcess.Dilation(igMain);
+        q_pForm = new ImageForm(igMain, "Dilation Image", this);
+    }
+    else if(cbitem == "Erosion"){
+        igMain = ImgProcess.Erosion(igMain);
+        q_pForm = new ImageForm(igMain, "Erosion Image", this);
+    }
+    else if(cbitem == "Opening"){
+        igMain = ImgProcess.Opening(igMain);
+        q_pForm = new ImageForm(igMain, "Opening Image", this);
+    }
+    else if(cbitem == "Closing"){
+        igMain = ImgProcess.Closing(igMain);
+        q_pForm = new ImageForm(igMain, "Closing Image", this);
+    }
+    else{
+        q_pForm = new ImageForm(igMain, "noChange Image", this);
+    }
+
+    _plpImageForm->Add(q_pForm);
+    q_pForm->show();
+
+    //UI 활성화 갱신
+    UpdateUI();
+}
+
+void MainFrame::on_buttonLabel_clicked()
+{
+    //포커스 된 ImageForm으로부터 영상을 가져옴
+    KImageGray   igMain;
+    if(_q_pFormFocused != 0 && _q_pFormFocused->ImageGray().Address())
+        igMain = _q_pFormFocused->ImageGray();
+    else
+        return;
+
+    ImageForm*  q_pForm;
+
+    // 라벨 색깔을 표시하기 위해서
+    KImageColor  labelImg(igMain.Row(), igMain.Col());
+    int r,g,b;
+
+    // 난수 생성
+    srand(time(NULL));
+
+    _1DPIXEL    labelData;
+    labelData = ImgProcess.Labeling(igMain);
+
+    for(int nLabel=0; nLabel<labelData.size(); nLabel++){
+        r = rand() % 256;
+        g = rand() % 256;
+        b = rand() % 256;
+        for(int nData=0; nData<labelData[nLabel]->size(); nData++){
+            labelImg[labelData[nLabel]->at(nData)/igMain.Col()][labelData[nLabel]->at(nData)%igMain.Col()].r = r;
+            labelImg[labelData[nLabel]->at(nData)/igMain.Col()][labelData[nLabel]->at(nData)%igMain.Col()].g = g;
+            labelImg[labelData[nLabel]->at(nData)/igMain.Col()][labelData[nLabel]->at(nData)%igMain.Col()].b = b;
+        }
+    }
+
+    q_pForm = new ImageForm(labelImg, "Label Image", this);
+
+    _plpImageForm->Add(q_pForm);
+    q_pForm->show();
+
+    //UI 활성화 갱신
+    UpdateUI();
+}
