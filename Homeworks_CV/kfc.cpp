@@ -8429,6 +8429,8 @@ void KHisto::HEQ(KImageGray& igImg, bool bSetHisto)
 				dpHisto[igImg[i][j]] ++;
 }
 
+void KHisto::HEQ(KImageColor &icImg, bool bSetHisto){ }
+
 //////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -11208,14 +11210,17 @@ bool KGaussian::OnRandom(int nNum)
 
 	_nNum  = (nNum+1)/2*2; //to produce an even nember
 
-	if(_fpRandom)
-		delete[] _fpRandom;
-	if(_opRandom)
-		delete _opRandom;
-	if( (_fpRandom=new float[_nNum]) == 0)
-		return false;
-	if( (_opRandom=new KRandom(_nNum)) == 0)
-		return false;
+//	if(_fpRandom)
+//		delete[] _fpRandom;
+//	if(_opRandom)
+//		delete _opRandom;
+//	if( (_fpRandom=new float[_nNum]) == 0)
+//		return false;
+//	if( (_opRandom=new KRandom(_nNum)) == 0)
+//		return false;
+
+    _fpRandom=new float[_nNum];
+    _opRandom=new KRandom(_nNum);
 
 	for(int i=0; i<_nNum; i+=2){
 		do{
@@ -11233,7 +11238,7 @@ bool KGaussian::OnRandom(int nNum)
 	//set index of ready-made random numbers
 	_nIdx	= 0;
 
-	return true;
+    return true;
 }
 
 void KGaussian::OffRandom( )

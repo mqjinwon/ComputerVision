@@ -10,6 +10,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 TARGET = homework
 TEMPLATE = app
 
+INCLUDEPATH = "./eigen-3.3.8"
 
 SOURCES += main.cpp\
     kimgprocess.cpp \

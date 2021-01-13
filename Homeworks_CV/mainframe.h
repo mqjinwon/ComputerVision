@@ -57,6 +57,28 @@ private slots:
 
     void on_buttonLabel_clicked();
 
+    void on_buttonHistoMatch_clicked();
+
+    void on_buttonHistoEqual_clicked();
+
+    void on_buttonGN_clicked();
+
+    void on_buttonSalt_clicked();
+
+    void on_buttonGF_clicked();
+
+    void on_buttonMF_clicked();
+
+    void on_buttonFDG_clicked();
+
+    void on_buttonCE_clicked();
+
+    void on_buttonCHT_clicked();
+
+    void on_buttonGHT_clicked();
+
+    void on_buttonOF_clicked();
+
 protected:
     void closeEvent(QCloseEvent* event);
 };

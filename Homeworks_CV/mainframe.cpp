@@ -286,7 +286,7 @@ void MainFrame::on_buttonContrast_clicked()
 
     ImageForm*  q_pForm;
 
-    if(_q_pFormFocused != 0 && _q_pFormFocused->ID() == "OPEN"){
+    if(_q_pFormFocused != 0){
         if(_q_pFormFocused->ImageColor().Address()){
             KImageColor icMain = _q_pFormFocused->ImageColor();
 
@@ -320,11 +320,11 @@ void MainFrame::on_buttonContrast_clicked()
         else{
             return;
         }
+
+        _plpImageForm->Add(q_pForm);
+        q_pForm->show();
+
     }
-
-
-    _plpImageForm->Add(q_pForm);
-    q_pForm->show();
 
     //UI 활성화 갱신
     UpdateUI();
@@ -432,4 +432,600 @@ void MainFrame::on_buttonLabel_clicked()
 
     //UI 활성화 갱신
     UpdateUI();
+}
+
+void MainFrame::on_buttonHistoEqual_clicked()
+{
+    ImageForm*  q_pForm;
+
+    if(_q_pFormFocused != 0){
+        // color image
+        if(_q_pFormFocused->ImageColor().Address()){
+            KImageColor   icMain;
+
+            icMain = _q_pFormFocused->ImageColor();
+
+            // histogram을 보기 위한 장치
+            KImageGray colorImg[3];
+            for(int i=0; i<3; i++){
+                colorImg[i].Create(icMain.Row(), icMain.Col());
+            }
+
+            for(int nRow=0; nRow < icMain.Row(); nRow++){
+                for(int nCol=0; nCol < icMain.Col(); nCol++){
+                    colorImg[0][nRow][nCol] = icMain[nRow][nCol].r;
+                    colorImg[1][nRow][nCol] = icMain[nRow][nCol].g;
+                    colorImg[2][nRow][nCol] = icMain[nRow][nCol].b;
+                }
+            }
+
+            DrawHist(colorImg[0], "before HE red");
+            DrawHist(colorImg[1], "before HE green");
+            DrawHist(colorImg[2], "before HE blue");
+
+
+            ImgProcess.HistogramEqualization(icMain);
+
+            for(int nRow=0; nRow < icMain.Row(); nRow++){
+                for(int nCol=0; nCol < icMain.Col(); nCol++){
+                    colorImg[0][nRow][nCol] = icMain[nRow][nCol].r;
+                    colorImg[1][nRow][nCol] = icMain[nRow][nCol].g;
+                    colorImg[2][nRow][nCol] = icMain[nRow][nCol].b;
+                }
+            }
+
+            DrawHist(colorImg[0], "after HE red");
+            DrawHist(colorImg[1], "after HE green");
+            DrawHist(colorImg[2], "after HE blue");
+
+            // 출력을 위한 ImageForm 생성
+            q_pForm = new ImageForm(icMain, "HE Image", this);
+
+        }
+        // gray image
+        else if(_q_pFormFocused->ImageGray().Address()){
+            KImageGray   igMain;
+
+            igMain = _q_pFormFocused->ImageGray();
+
+            DrawHist(igMain, "before executing Histogram Equalization transform");
+
+            ImgProcess.HistogramEqualization(igMain);
+
+            DrawHist(igMain, "after executing Histogram Equalization transform");
+
+
+            // 출력을 위한 ImageForm 생성
+            q_pForm = new ImageForm(igMain, "HE Image", this);
+        }
+        else{
+            return;
+        }
+
+        _plpImageForm->Add(q_pForm);
+        q_pForm->show();
+    }
+
+    //UI 활성화 갱신
+    UpdateUI();
+}
+
+
+void MainFrame::on_buttonHistoMatch_clicked()
+{
+
+    ImageForm*  q_pForm;
+
+    if(_q_pFormFocused != 0){
+        // color image
+        if(_q_pFormFocused->ImageColor().Address()){
+            KImageColor   icMain;
+
+            icMain = _q_pFormFocused->ImageColor();
+
+            // COLOR 이미지를 고를때까지 반복
+            do{
+            //이미지 파일 선택
+            QFileDialog::Options    q_Options   =  QFileDialog::DontResolveSymlinks  | QFileDialog::DontUseNativeDialog; // | QFileDialog::ShowDirsOnly
+            QString                 q_stFile    =  QFileDialog::getOpenFileName(this, tr("Select a Image File"),  "./data", "Image Files(*.bmp *.ppm *.pgm *.png)",0, q_Options);
+
+            if(q_stFile.length() == 0)
+                return;
+
+            //비교를 위한 이미지 폼 생성
+            q_pForm     = new ImageForm(q_stFile, "Tmp image", this);
+
+
+            if(!q_pForm->ImageColor().Address()){
+                delete q_pForm;
+            }
+
+            }
+            while(!q_pForm->ImageColor().Address());
+
+            ImgProcess.HistogramMatching(icMain, q_pForm->ImageColor());
+
+
+            // 출력을 위한 ImageForm 생성
+            q_pForm = new ImageForm(icMain, "HM Image", this);
+
+        }
+        // gray image
+        else if(_q_pFormFocused->ImageGray().Address()){
+            KImageGray   igMain;
+
+            igMain = _q_pFormFocused->ImageGray();
+
+            // GRAYSCALE 이미지를 고를때까지 반복
+            do{
+            //이미지 파일 선택
+            QFileDialog::Options    q_Options   =  QFileDialog::DontResolveSymlinks  | QFileDialog::DontUseNativeDialog; // | QFileDialog::ShowDirsOnly
+            QString                 q_stFile    =  QFileDialog::getOpenFileName(this, tr("Select a Image File"),  "./data", "Image Files(*.bmp *.ppm *.pgm *.png)",0, q_Options);
+
+            if(q_stFile.length() == 0)
+                return;
+
+            //비교를 위한 이미지 폼 생성
+            q_pForm     = new ImageForm(q_stFile, "Tmp image", this);
+
+
+            if(!q_pForm->ImageGray().Address()){
+                delete q_pForm;
+            }
+
+            }
+            while(!q_pForm->ImageGray().Address());
+
+            DrawHist(q_pForm->ImageGray(), "Target Histogram");
+
+            DrawHist(igMain, "before executing Histogram Matching transform");
+
+            ImgProcess.HistogramMatching(igMain, q_pForm->ImageGray());
+
+            DrawHist(igMain, "after executing Histogram Matching transform");
+
+
+            // 출력을 위한 ImageForm 생성
+            q_pForm = new ImageForm(igMain, "HM Image", this);
+        }
+        else{
+            return;
+        }
+
+        _plpImageForm->Add(q_pForm);
+        q_pForm->show();
+    }
+
+    //UI 활성화 갱신
+    UpdateUI();
+}
+
+void MainFrame::on_buttonGN_clicked()
+{
+    ImageForm*  q_pForm;
+
+    if(_q_pFormFocused != 0){
+        // color image
+        if(_q_pFormFocused->ImageColor().Address()){
+            KImageColor   icMain;
+
+            icMain = _q_pFormFocused->ImageColor();
+
+            double mean[3]  = {20, 20, 20};
+            double var[3]   = {50, 50, 50};
+
+            icMain = ImgProcess.GaussianNoiseToColorImage(icMain, mean, var);
+
+            // 출력을 위한 ImageForm 생성
+            q_pForm = new ImageForm(icMain, "GN Image", this);
+
+        }
+        // gray image
+        else if(_q_pFormFocused->ImageGray().Address()){
+            KImageGray   igMain;
+
+            igMain = _q_pFormFocused->ImageGray();
+
+            igMain = ImgProcess.GaussianNoiseToGrayImage(igMain, 20, 50);
+
+            // 출력을 위한 ImageForm 생성
+            q_pForm = new ImageForm(igMain, "GN Image", this);
+        }
+        else{
+            return;
+        }
+
+        _plpImageForm->Add(q_pForm);
+        q_pForm->show();
+    }
+
+    //UI 활성화 갱신
+    UpdateUI();
+}
+
+void MainFrame::on_buttonSalt_clicked()
+{
+    ImageForm*  q_pForm;
+
+    if(_q_pFormFocused != 0){
+        // color image
+        if(_q_pFormFocused->ImageColor().Address()){
+            KImageColor   icMain;
+
+            icMain = _q_pFormFocused->ImageColor();
+
+            icMain = ImgProcess.PepperSaltToColorImage(icMain);
+
+            // 출력을 위한 ImageForm 생성
+            q_pForm = new ImageForm(icMain, "PS Image", this);
+
+        }
+        // gray image
+        else if(_q_pFormFocused->ImageGray().Address()){
+            KImageGray   igMain;
+
+            igMain = _q_pFormFocused->ImageGray();
+
+            igMain = ImgProcess.PepperSaltToGrayImage(igMain);
+
+            // 출력을 위한 ImageForm 생성
+            q_pForm = new ImageForm(igMain, "PS Image", this);
+        }
+        else{
+            return;
+        }
+
+        _plpImageForm->Add(q_pForm);
+        q_pForm->show();
+    }
+
+    //UI 활성화 갱신
+    UpdateUI();
+}
+
+void MainFrame::on_buttonGF_clicked()
+{
+    ImageForm*  q_pForm;
+
+    if(_q_pFormFocused != 0){
+        // color image
+        if(_q_pFormFocused->ImageColor().Address()){
+            KImageColor   icMain;
+
+            icMain = _q_pFormFocused->ImageColor();
+
+            icMain = ImgProcess.GaussianSmoothing(icMain, 0.7);
+
+            // 출력을 위한 ImageForm 생성
+            q_pForm = new ImageForm(icMain, "PS Image", this);
+
+        }
+        // gray image
+        else if(_q_pFormFocused->ImageGray().Address()){
+            KImageGray   igMain;
+
+            igMain = _q_pFormFocused->ImageGray();
+
+            igMain = ImgProcess.GaussianSmoothing(igMain, 0.7);
+
+            // 출력을 위한 ImageForm 생성
+            q_pForm = new ImageForm(igMain, "GS Image", this);
+        }
+        else{
+            return;
+        }
+
+        _plpImageForm->Add(q_pForm);
+        q_pForm->show();
+    }
+
+    //UI 활성화 갱신
+    UpdateUI();
+}
+
+void MainFrame::on_buttonMF_clicked()
+{
+    ImageForm*  q_pForm;
+
+    if(_q_pFormFocused != 0){
+        // color image
+        if(_q_pFormFocused->ImageColor().Address()){
+            KImageColor   icMain;
+
+            icMain = _q_pFormFocused->ImageColor();
+
+            icMain = ImgProcess.MedianFiltering(icMain, 3);
+
+            // 출력을 위한 ImageForm 생성
+            q_pForm = new ImageForm(icMain, "MF Image", this);
+
+        }
+        // gray image
+        else if(_q_pFormFocused->ImageGray().Address()){
+            KImageGray   igMain;
+
+            igMain = _q_pFormFocused->ImageGray();
+
+            igMain = ImgProcess.MedianFiltering(igMain, 3);
+
+            // 출력을 위한 ImageForm 생성
+            q_pForm = new ImageForm(igMain, "MF Image", this);
+        }
+        else{
+            return;
+        }
+
+        _plpImageForm->Add(q_pForm);
+        q_pForm->show();
+    }
+
+    //UI 활성화 갱신
+    UpdateUI();
+}
+
+void MainFrame::on_buttonFDG_clicked()
+{
+    ImageForm*  q_pForm;
+
+    if(_q_pFormFocused != 0){
+
+        if(_q_pFormFocused->ImageGray().Address()){
+            KImageGray   igMain;
+
+            igMain = _q_pFormFocused->ImageGray();
+
+            igMain = ImgProcess.FDG(igMain);
+
+
+#if DEBUG
+            _EDGEIMG tmpGradient = ImgProcess.showGradient();
+
+            for(int nRow = 0; nRow < tmpGradient.size(); nRow++){
+                for(int nCol = 0; nCol < tmpGradient[nRow]->size(); nCol++){
+                    printf("%.0f, ", (*tmpGradient[nRow])[nCol].magn);
+                }
+                printf("\n");
+            }
+#endif
+
+            // 출력을 위한 ImageForm 생성
+            q_pForm = new ImageForm(igMain, "FDG Image", this);
+        }
+        else{
+            return;
+        }
+
+        _plpImageForm->Add(q_pForm);
+        q_pForm->show();
+    }
+
+    //UI 활성화 갱신
+    UpdateUI();
+
+}
+
+void MainFrame::on_buttonCE_clicked()
+{
+    ImageForm*  q_pForm;
+
+    if(_q_pFormFocused != 0){
+
+        if(_q_pFormFocused->ImageGray().Address()){
+
+            // t0, t1 값 가져오기
+            double t0 = ui->spinMin_t0->text().toDouble();
+            double t1 = ui->spinMin_t1->text().toDouble();
+
+            KImageGray   igMain;
+
+            igMain = _q_pFormFocused->ImageGray();
+
+            igMain = ImgProcess.CannyEdge(igMain, t0, t1);
+
+            // 출력을 위한 ImageForm 생성
+            q_pForm = new ImageForm(igMain, "Canny Edge Image", this);
+        }
+        else{
+            return;
+        }
+
+        _plpImageForm->Add(q_pForm);
+        q_pForm->show();
+    }
+
+    //UI 활성화 갱신
+    UpdateUI();
+}
+
+void MainFrame::on_buttonCHT_clicked()
+{
+    ui->textBrowserResult->clear();
+
+    ImageForm*  q_pForm;
+
+    if(_q_pFormFocused != 0){
+
+        if(_q_pFormFocused->ImageGray().Address()){
+
+            KImageGray   igMain;
+            igMain = _q_pFormFocused->ImageGray();
+
+            _POINTS result;
+            QString resultTxt;
+
+            double threshold = ui->doubleSpinBoxThreshold->text().toDouble();
+
+            // 반지름이 정해졌을 때
+            int isRadius = ui->checkBoxRadius->checkState();
+
+            if(isRadius == Qt::CheckState::Checked){
+                double radius = ui->plainTextEditRadius->toPlainText().toDouble();
+                result = ImgProcess.CircleHoughTransform(igMain, radius, threshold);
+
+            }
+            // 반지름이 정해지지 않았을 때
+            else{
+                double minR = ui->plainTextEditMinR->toPlainText().toDouble();
+                double maxR = ui->plainTextEditMaxR->toPlainText().toDouble();
+
+                result = ImgProcess.CircleHoughTransform(igMain, minR, maxR, threshold);
+            }
+
+            // 출력을 위한 ImageForm 생성
+            q_pForm = new ImageForm(ImgProcess.GetResultIcImg(), "circle HoughTransform Image", this);
+
+            for(int i=0; i < result.size(); i++){
+                resultTxt += QString::number(i+1);
+                resultTxt += ". row : ";
+                resultTxt += QString::number(result[i].first);
+                resultTxt += ", col : ";
+                resultTxt += QString::number(result[i].second);
+                resultTxt += "\n";
+            }
+
+            ui->textBrowserResult->setText(resultTxt);
+        }
+        else{
+            return;
+        }
+
+        _plpImageForm->Add(q_pForm);
+        q_pForm->show();
+    }
+
+    //UI 활성화 갱신
+    UpdateUI();
+}
+
+void MainFrame::on_buttonGHT_clicked()
+{
+    ui->textBrowserResult->clear();
+
+    ImageForm*  q_pForm;
+
+    if(_q_pFormFocused != 0){
+
+        if(_q_pFormFocused->ImageGray().Address()){
+
+            //txt 파일 선택
+            QFileDialog::Options    q_Options   =  QFileDialog::DontResolveSymlinks  | QFileDialog::DontUseNativeDialog; // | QFileDialog::ShowDirsOnly
+            QString                 q_stFile    =  QFileDialog::getOpenFileName(this, tr("Select a txt File"),  "./data", "txt Files(*.txt)",0, q_Options);
+
+            if(q_stFile.length() == 0)
+                return;
+
+            KImageGray   igMain;
+            igMain = _q_pFormFocused->ImageGray();
+
+            _POINTS result;
+            QString resultTxt;
+
+            double threshold = ui->doubleSpinBoxThreshold->text().toDouble();
+
+            result = ImgProcess.GeneralHoughTransform(igMain, q_stFile.toUtf8().constData(), threshold);
+
+            // 출력을 위한 ImageForm 생성
+            q_pForm = new ImageForm(ImgProcess.GetResultIcImg(), "general HoughTransform Image", this);
+
+            for(int i=0; i < result.size(); i++){
+                resultTxt += QString::number(i+1);
+                resultTxt += ". row : ";
+                resultTxt += QString::number(result[i].first);
+                resultTxt += ", col : ";
+                resultTxt += QString::number(result[i].second);
+                resultTxt += "\n";
+            }
+
+            ui->textBrowserResult->setText(resultTxt);
+        }
+        else{
+            return;
+        }
+
+        _plpImageForm->Add(q_pForm);
+        q_pForm->show();
+    }
+
+    //UI 활성화 갱신
+    UpdateUI();
+}
+
+void MainFrame::on_buttonOF_clicked()
+{
+    //이미지 파일 선택
+    QFileDialog::Options    q_Options   =  QFileDialog::DontResolveSymlinks  | QFileDialog::DontUseNativeDialog; // | QFileDialog::ShowDirsOnly
+    QString                 q_stFile1    =  QFileDialog::getOpenFileName(this, tr("Select a Image File"),  "./data", "Image Files(*.bmp *.ppm *.pgm *.png)",0, q_Options);
+    QString                 q_stFile2    =  QFileDialog::getOpenFileName(this, tr("Select a Image File"),  "./data", "Image Files(*.bmp *.ppm *.pgm *.png)",0, q_Options);
+
+    if(q_stFile1.length() == 0 || q_stFile2.length() == 0)
+        return;
+
+
+
+    //이미지 출력을 위한 ImageForm 생성
+    ImageForm*  q_pFormSrc1   = new ImageForm(q_stFile1, "src1", this);
+    ImageForm*  q_pFormSrc2   = new ImageForm(q_stFile2, "src2", this);
+    ImageForm*  q_pFormRes;
+
+
+    _plpImageForm->Add(q_pFormSrc1);
+    _plpImageForm->Add(q_pFormSrc2);
+
+    q_pFormSrc1->show();
+    q_pFormSrc2->show();
+
+    KImageGray igSrc1 = q_pFormSrc1->ImageGray();
+    KImageGray igSrc2 = q_pFormSrc2->ImageGray();
+
+    KImageColor icMain;
+    _EDGEIMG    edgeImg;
+
+    vector<vector<double>> a;
+    vector<double> tmp;
+    tmp.assign(2, 0.);
+    a.assign(2, tmp);
+
+    vector<vector<double>> b;
+    b.assign(2, tmp);
+
+    for(int nRow=0; nRow < 2; nRow++){
+        for(int nCol=0; nCol < 2; nCol++){
+           a[nRow][nCol] = nCol + nRow*2;
+           b[nRow][nCol] = nCol + nRow*2;
+        }
+    }
+
+//    JMatrix<double> mats;
+//    _JMAT m1 = mats.AddMatrix(a, b);
+//    _JMAT m2 = mats.DotProduct(a, b);
+//    _JMAT m3 = mats.MinusMatrix(a, b);
+//    _JMAT m4 = mats.DivideMatrix(a, b);
+//    _JMAT m5 = mats.Inverse2Matrix(a);
+//    _JMAT m6 = mats.TransposeMatrix(a);
+
+
+    edgeImg = ImgProcess.OpticalFlow(igSrc1, igSrc2);
+    icMain = ImgProcess.GetResultIcImg();
+
+    q_pFormRes = new ImageForm(icMain, "Optical Flow Image", this);
+
+    int nScale = 8;
+
+    for(int nRow = 0; nRow < icMain.Row()/nScale; nRow++){
+        for(int nCol=0; nCol < icMain.Col()/nScale; nCol++){
+            int nDx = edgeImg[nRow*nScale]->at(nCol*nScale).dx;
+            int nDy = edgeImg[nRow*nScale]->at(nCol*nScale).dy;
+
+            q_pFormRes->DrawLine(nCol*nScale, nRow*nScale, nCol*nScale+nDx, nRow*nScale+nDy,
+                                 QColor(255, 255, 0), 1);
+        }
+    }
+
+    _plpImageForm->Add(q_pFormRes);
+    q_pFormRes->show();
+
+
+    //UI 활성화 갱신
+    UpdateUI();
+
 }

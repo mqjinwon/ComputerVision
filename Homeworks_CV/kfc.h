@@ -1793,7 +1793,7 @@ public:
 	void        	Histogram(const KImageGray& igImg,const int& nType=_GRAY,const int& nDir=-1,const int& nS=0,const int& nE=0);               
 	void        	Histogram(const KPtrList<KImageGray*>& plImg);
 	void        	HEQ(KImageGray&  igImg, bool bSetHisto = false);
-	void        	HEQ(KImageColor& icImg, bool bSetHisto = false){ };
+    void        	HEQ(KImageColor& icImg, bool bSetHisto = false);;
 
     double                           Mean();
 	KBINARIZATION_OUTPUT*	Ostu(const KImageGray* igpImg=0,KImageGray* igpOut=0);
